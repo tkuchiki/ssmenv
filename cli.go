@@ -41,7 +41,8 @@ func Run() error {
 	var tags = ParseCSV(app.Flag("tags", "Filter by tags (comma separated)").PlaceHolder("KEY=VALUE,..."))
 	var types = ParseCSV(app.Flag("types", "The type of parameters (comma separated)").Default("String,SecureString"))
 	var multiValues = ParseCSV(app.Flag("multi-values", "Names or paths with multiple values (comma separated)").PlaceHolder("PARAM_NAME,..."))
-	var nonRecursive = app.Flag("non-recursive", "Describes one level paths").Bool()
+	// does not work
+	//var nonRecursive = app.Flag("non-recursive", "Describes one level paths").Bool()
 	var withoutExport = app.Flag("without-export", "Without export").Bool()
 	var hideExists = app.Flag("hide-exists", "Hide environment variables if it already exists").Bool()
 	var failExists = app.Flag("fail-exists", "Fail if environment variables alerady exists").Bool()
@@ -58,40 +59,40 @@ func Run() error {
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	recursive := !*nonRecursive
+	//recursive := !*nonRecursive
+	recursive := true
 
 	ssmenv, err := NewSSMEnv(*awsAccessKeyID, *awsSecretAccessKey, *awsArn, *awsToken, *awsRegion, *awsProfile, *awsConfig, *awsCreds)
 	if err != nil {
 		return err
 	}
 
-	metadata, err := ssmenv.DescribeParametersFilterByPaths(*paths, *tags, *types, recursive)
-	if err != nil {
-		return err
-	}
-
 	envs := make(map[string]string)
 
-	var params *ssm.GetParametersOutput
-	nameFilters := make([]string, 0, len(metadata))
+	nameFilters := make([]string, 0)
 	if len(*paths) > 0 {
+		metadata, err := ssmenv.DescribeParametersFilterByPaths(*paths, *tags, *types, recursive)
+		if err != nil {
+			return err
+		}
+
 		for _, m := range metadata {
 			nameFilters = append(nameFilters, *(m.Name))
-
 		}
-	}
-
-	metadata, err = ssmenv.DescribeParametersFilterByNames(*names, *tags, *types)
-	if err != nil {
-		return err
 	}
 
 	if len(*names) > 0 {
+		metadata, err := ssmenv.DescribeParametersFilterByNames(*names, *tags, *types)
+		if err != nil {
+			return err
+		}
+
 		for _, m := range metadata {
 			nameFilters = append(nameFilters, *(m.Name))
 		}
 	}
 
+	var params *ssm.GetParametersOutput
 	params, err = ssmenv.GetParameters(nameFilters)
 	if err != nil {
 		return err
