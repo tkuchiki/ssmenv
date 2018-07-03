@@ -23,6 +23,7 @@ Flags:
   --without-export               Without export
   --hide-exists                  Hide environment variables if it already exists
   --fail-exists                  Fail if environment variables alerady exists
+  --retries=3                    Number of times of retry
   --access-key=ACCESS-KEY        The AWS access key ID
   --secret-key=SECRET-KEY        The AWS secret access key
   --assume-role-arn=ASSUME-ROLE-ARN

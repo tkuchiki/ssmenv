@@ -46,6 +46,7 @@ func Run() error {
 	var withoutExport = app.Flag("without-export", "Without export").Bool()
 	var hideExists = app.Flag("hide-exists", "Hide environment variables if it already exists").Bool()
 	var failExists = app.Flag("fail-exists", "Fail if environment variables alerady exists").Bool()
+	var retries = app.Flag("retries", "Number of times of retry").Default("3").Int()
 	var awsAccessKeyID = app.Flag("access-key", "The AWS access key ID").String()
 	var awsSecretAccessKey = app.Flag("secret-key", "The AWS secret access key").String()
 	var awsArn = app.Flag("assume-role-arn", "The AWS assume role ARN").String()
@@ -62,7 +63,7 @@ func Run() error {
 	//recursive := !*nonRecursive
 	recursive := true
 
-	ssmenv, err := NewSSMEnv(*awsAccessKeyID, *awsSecretAccessKey, *awsArn, *awsToken, *awsRegion, *awsProfile, *awsConfig, *awsCreds)
+	ssmenv, err := NewSSMEnv(*awsAccessKeyID, *awsSecretAccessKey, *awsArn, *awsToken, *awsRegion, *awsProfile, *awsConfig, *awsCreds, *retries)
 	if err != nil {
 		return err
 	}

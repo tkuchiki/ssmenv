@@ -32,7 +32,7 @@ func newAWSSession(accessKey, secretKey, arn, token, region, profile, config, cr
 	return awsconfig.NewSession(conf)
 }
 
-func NewSSMEnv(accessKey, secretKey, arn, token, region, profile, config, creds string) (*SSMEnv, error) {
+func NewSSMEnv(accessKey, secretKey, arn, token, region, profile, config, creds string, retries int) (*SSMEnv, error) {
 	sess, err := newAWSSession(accessKey, secretKey, arn, token, region, profile, config, creds)
 
 	if err != nil {
@@ -46,8 +46,13 @@ func NewSSMEnv(accessKey, secretKey, arn, token, region, profile, config, creds 
 		envs[pair[0]] = struct{}{}
 	}
 
+	// config.MaxRetries is defaults to -1
+	if retries <= 0 {
+		retries = -1
+	}
+
 	return &SSMEnv{
-		ssmClient: ssm.New(sess),
+		ssmClient: ssm.New(sess, aws.NewConfig().WithMaxRetries(retries)),
 		replacer:  strings.NewReplacer("-", "/", ".", "/"),
 		envs:      envs,
 	}, nil
